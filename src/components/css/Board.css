@@ -1,23 +1,77 @@
-.board {
-  display: grid;
-  grid-template-columns: repeat(15, 40px);
-  grid-template-rows: repeat(15, 40px);
-  border: 2px solid black;  
-  width: fit-content;
+/* Container that constrains the board to a square */
+.board-container {
+  width: 90vw;
+  max-width: 600px;
+  aspect-ratio: 1 / 1;
   margin: 20px auto;
-  gap: 1px;  
-  background: gray; 
+  position: relative;
 }
 
-.tile {
-  width: 40px;
-  height: 40px;
-  background-color: #e6e6fa;
+/* Optional wrapper class to center the board */
+.Board {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
-.tile:hover {
-  background-color: #ffcc00;
+/* Table layout */
+table {
+  width: 100%;
+  height: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* ensures a consistent 15x15 grid */
+  text-align: center;
 }
 
+/* Base cell styling */
+td {
+  background-color: #ddd; /* neutral color for normal squares */
+  border: 1px solid #444; /* optional, for crisp grid lines */
+  width: 6.66%;  /* 1/15 of the table width */
+  height: 6.66%;
+  transition: background-color 0.2s ease;
+}
 
-  
+/* Hover highlight (optional) */
+td:hover {
+  background-color: rgba(130, 130, 150, 0.5);
+}
+
+/* Bonus square styles (classic Scrabble colors) */
+.TW {
+  background-color: #8B0000; /* Red */
+  color: #fff;
+}
+
+.DW {
+  background-color: #FFCCCB; /* Light Pink */
+  color: #000; /* Black stands out well on pink */
+}
+
+.TL {
+  background-color: #00008B; /* Dark Blue */
+  color: #fff;
+}
+
+.DL {
+  background-color: #ADD8E6; /* Light Blue */
+  color: #000; 
+}
+
+/* Center tile with a star (optional) */
+.centerTile {
+  background-color: #FFCCCB; /* same as DW or unique color */
+  position: relative;
+}
+
+.centerTile::after {
+  content: "★"; /* or use a background image if you prefer */
+  color: #000;
+  font-size: 1.2em;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
