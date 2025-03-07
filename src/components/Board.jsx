@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import "../css/Board.css";
 import ScoreBoard from "./ScoreBoard";
 import { calculateScores } from "../Logic/Scoring"; 
@@ -21,22 +21,69 @@ const bonusSquares = {
 
 const Board = () => {
   const boardSize = 15;
-  const [playerScore, setPlayerScore]= useState(0);//tracking player's score
+  //tracking player's score
+  const [player1Score, setPlayer1Score] = useState(0);
+  const [player2Score, setPlayer2Score] = useState(0);
+  const [currentPlayer, setCurrentPlayer] = useState(1); //player 1 starts
+  const [timeLeft, setTimeLeft] = useState(60); // 60 seconds per turn
 
-  const handleWordPlacement =(placedTiles) =>{
-    //get each tile's bonus from the board
+  //the timer logic
+  useEffect(() => {
+    if (timeLeft === 0) {
+      console.log(`Player ${currentPlayer} ran out of time! Switching turns.`);
+      
+      // Wait 1 second before switching the turn to ensure UI updates
+      setTimeout(() => {
+        switchTurn();
+      }, 1000);
+      return; //stop execution here
+    }
+  
+    const timer = setInterval(() => {
+      setTimeLeft(last => last - 1);
+    }, 1000);
+  
+    return () => clearInterval(timer); // Cleanup
+  }, [timeLeft]); 
+  
+  //switching turn logic
+  const switchTurn = () => {
+    setCurrentPlayer(prev => {
+      const nextPlayer = prev === 1 ? 2 : 1;
+      console.log(`It's now Player ${nextPlayer}'s turn!`);
+      return nextPlayer;
+    });
+  
+    //Don't reset the timer immediately
+    setTimeout(() => {
+      setTimeLeft(60);
+    }, 1500); // Small delay to allow UI updates before timer resets
+  };
+  
+
+
+  const handleWordPlacement = (placedTiles) => {
     const bonusTiles = placedTiles.map(tile => ({
       letter: tile.letter,
-      bonus:bonusSquares[tile.position] || "" //get bonus type or empty string
+      bonus: bonusSquares[tile.position] || "" // Get bonus type or empty string
     }));
-    //calculate the score for the palced word
+  
     const points = calculateScores(bonusTiles);
-    setPlayerScore(last =>{ //update the player's score
-      const newScore = last+points;
-      console.log(`Word placed! Points Earned = ${points}. Total ${newScore}`);
-      return newScore;
-    }); 
+  
+    if (currentPlayer === 1) {
+      setPlayer1Score(last => last + points);
+    } else {
+      setPlayer2Score(last => last + points);
+    }
+  
+    console.log(`Player ${currentPlayer} placed a word! Earned ${points} points.`);
+    
+    // Add a slight delay to ensure the turn switches before resetting the timer
+    setTimeout(() => {
+      switchTurn();
+    }, 1000);
   };
+  
   
 
   const rows = [];
@@ -62,8 +109,24 @@ const Board = () => {
 
   return (
     <div className="Board">
-      {/* Display the scoreboard */}
-      <ScoreBoard score={playerScore} />
+      {/* ✅ Wrap Scoreboard & Turn Indicator in a div for better alignment */}
+      <div className="scoreboard-container">
+        {/* ✅ Turn Indicator - Shows who is playing */}
+        <h3 className={`turn-indicator ${timeLeft === 60 ? "turn-change" : ""}`}>
+          🎲 It’s <span className={currentPlayer === 1 ? "player1" : "player2"}>
+          Player {currentPlayer}</span>’s Turn! 🎲
+        </h3>
+  
+        {/* ✅ Scoreboard (Now Below Turn Indicator) */}
+        <ScoreBoard
+          player1Score={player1Score} 
+          player2Score={player2Score} 
+          currentPlayer={currentPlayer}
+          timeLeft={timeLeft}
+        />
+      </div>
+  
+      {/* Game Board */}
       <div className="board-container">
         <table>
           <tbody>{rows}</tbody>
@@ -71,6 +134,7 @@ const Board = () => {
       </div>
     </div>
   );
+  
 };
 
 export default Board;
