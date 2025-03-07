@@ -1,9 +1,6 @@
 import React from "react";
 import "./App.css";
 import Board from "./components/Board";
-import Rack from "./components/Rack";
-import TestTilesBag from "./components/TestTilesBag"; 
-import ScoreBoard from "./components/ScoreBoard";
 
 function App() {
   return (
@@ -11,9 +8,8 @@ function App() {
       <header className="App-header">
         <h1>Scrabble Game</h1>
       </header>
+      {/* Only the Board is rendered since it already includes the Rack */}
       <Board />
-      <Rack />
-      <TestTilesBag />
     </div>
   );
 }

@@ -1,4 +1,40 @@
-/* Container that constrains the board to a square */
+/* 
+  Main wrapper for the Board component.
+  Uses flex-direction: column so that:
+  1) .main-section (scoreboard + board) is on top
+  2) The Rack (rendered after .main-section) is at the bottom.
+*/
+.Board {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* centers the content horizontally */
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* 
+  .main-section holds the scoreboard and board side by side.
+*/
+.main-section {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 1200px;   /* Optional: limits total width */
+  margin-bottom: 20px; /* Space between the board area and the Rack */
+}
+
+/* 
+  Container for the scoreboard on the left.
+*/
+.scoreboard-area {
+  margin-right: 30px; /* Spacing between the scoreboard and the board */
+}
+
+/* 
+  Container that constrains the board to a square.
+*/
 .board-container {
   width: 90vw;
   max-width: 600px;
@@ -7,16 +43,7 @@
   position: relative;
 }
 
-/* Optional wrapper class to center the board */
-.Board {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 20px;
-  margin-bottom: 20px;
-}
-
-/* Table layout */
+/* Table layout for the 15x15 grid */
 table {
   width: 100%;
   height: 100%;
@@ -62,7 +89,7 @@ td:hover {
 
 /* Center tile with a star (optional) */
 .centerTile {
-  background-color: #FFCCCB; /* same as DW or unique color */
+  background-color: #FFCCCB; /* same as DW or a unique color */
   position: relative;
 }
 
