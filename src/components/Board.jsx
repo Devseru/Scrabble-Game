@@ -1,74 +1,45 @@
-import React from "react";
-import "./css/Board.css"; // Adjust path as needed
+import React, {useState} from "react";
+import "../css/Board.css";
+import ScoreBoard from "./ScoreBoard";
+import { calculateScores } from "../Logic/Scoring"; 
 
 // Example bonus squares mapping (with "1409": "TL" removed)
 const bonusSquares = {
-  "0101": "TW",
-  "0104": "DL",
-  "0108": "TW",
-  "0112": "DL",
-  "0115": "TW",
-  "0202": "DW",
-  "0206": "TL",
-  "0210": "TL",
-  "0214": "DW",
-  "0303": "DW",
-  "0307": "DL",
-  "0309": "DL",
-  "0313": "DW",
-  "0401": "DL",
-  "0404": "DW",
-  "0408": "DL",
-  "0412": "DW",
-  "0415": "DL",
-  "0505": "DW",
-  "0511": "DW",
-  "0602": "TL",
-  "0606": "TL",
-  "0610": "TL",
-  "0614": "TL",
-  "0703": "DL",
-  "0707": "DL",
-  "0709": "DL",
-  "0713": "DL",
-  "0801": "TW",
-  "0804": "DL",
-  "0808": "centerTile",
-  "0812": "DL",
-  "0815": "TW",
-  "0903": "DL",
-  "0907": "DL",
-  "0909": "DL",
-  "0913": "DL",
-  "1002": "TL",
-  "1006": "TL",
-  "1010": "TL",
-  "1014": "TL",
-  "1105": "DW",
-  "1111": "DW",
-  "1201": "DL",
-  "1204": "DW",
-  "1208": "DL",
-  "1212": "DW",
-  "1215": "DL",
-  "1303": "DW",
-  "1307": "DL",
-  "1309": "DL",
-  "1313": "DW",
-  "1402": "DW",
-  "1406": "TL",
-  "1410": "TL",
-  "1414": "DW",
-  "1501": "TW",
-  "1504": "DL",
-  "1512": "DL",
-  "1515": "TW",
+  "0101": "TW", "0104": "DL", "0108": "TW", "0112": "DL", "0115": "TW",
+  "0202": "DW", "0206": "TL", "0210": "TL", "0214": "DW", "0303": "DW",
+  "0307": "DL", "0309": "DL", "0313": "DW", "0401": "DL", "0404": "DW",
+  "0408": "DL", "0412": "DW", "0415": "DL", "0505": "DW", "0511": "DW",
+  "0602": "TL", "0606": "TL", "0610": "TL", "0614": "TL", "0703": "DL",
+  "0707": "DL", "0709": "DL", "0713": "DL", "0801": "TW", "0804": "DL",
+  "0808": "centerTile", "0812": "DL", "0815": "TW", "0903": "DL", "0907": "DL",
+  "0909": "DL", "0913": "DL", "1002": "TL", "1006": "TL", "1010": "TL",
+   "1014": "TL", "1105": "DW","1111": "DW",  "1201": "DL", "1204": "DW",
+  "1208": "DL", "1212": "DW", "1215": "DL", "1303": "DW", "1307": "DL",
+  "1309": "DL", "1313": "DW", "1402": "DW", "1406": "TL", "1410": "TL",
+  "1414": "DW", "1501": "TW", "1504": "DL", "1512": "DL", "1515": "TW",
 };
 
 const Board = () => {
   const boardSize = 15;
-  const rows = [];
+  const [playerScore, setPlayerScore]= useState(0);//tracking player's score
 
+  const handleWordPlacement =(placedTiles) =>{
+    //get each tile's bonus from the board
+    const bonusTiles = placedTiles.map(tile => ({
+      letter: tile.letter,
+      bonus:bonusSquares[tile.position] || "" //get bonus type or empty string
+    }));
+    //calculate the score for the palced word
+    const points = calculateScores(bonusTiles);
+    setPlayerScore(last =>{ //update the player's score
+      const newScore = last+points;
+      console.log(`Word placed! Points Earned = ${points}. Total ${newScore}`);
+      return newScore;
+    }); 
+  };
+  
+
+  const rows = [];
   for (let row = 1; row <= boardSize; row++) {
     const cells = [];
     for (let col = 1; col <= boardSize; col++) {
@@ -91,6 +62,8 @@ const Board = () => {
 
   return (
     <div className="Board">
+      {/* Display the scoreboard */}
+      <ScoreBoard score={playerScore} />
       <div className="board-container">
         <table>
           <tbody>{rows}</tbody>

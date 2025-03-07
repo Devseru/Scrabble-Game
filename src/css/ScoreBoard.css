@@ -1,0 +1,12 @@
+.scoreboard {
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    margin: 20px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border: 2px solid #333;
+    border-radius: 8px;
+    width: 200px;
+  }
+  
