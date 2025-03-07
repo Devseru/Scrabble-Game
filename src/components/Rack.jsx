@@ -1,18 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Tile from './Tile';
 import './Rack.css';
+import { getInitialTilesBag, drawTiles } from '../Logic/TilesBag';
 
 const Rack = () => {
-  // Sample initial set of tiles. In a full game, these would be drawn from your tile bag.
-  const [tiles] = useState([
-    { id: 1, letter: 'A', score: 1 },
-    { id: 2, letter: 'B', score: 3 },
-    { id: 3, letter: 'C', score: 3 },
-    { id: 4, letter: 'D', score: 2 },
-    { id: 5, letter: 'E', score: 1 },
-    { id: 6, letter: 'F', score: 4 },
-    { id: 7, letter: 'G', score: 2 },
-  ]);
+  const [bag, setBag] = useState([]);
+  const [tiles, setTiles] = useState([]);
+
+  // On component mount, initialize the bag and draw 7 tiles for the rack.
+  useEffect(() => {
+    const initialBag = getInitialTilesBag();
+    const initialTiles = drawTiles(7, initialBag); // Draw 7 tiles
+    setBag(initialBag); // Save remaining bag (for future use)
+    setTiles(initialTiles);
+  }, []);
 
   // Handlers for the control buttons (to be expanded as needed)
   const handleQuit = () => {
