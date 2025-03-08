@@ -4,6 +4,7 @@ import "../css/ScoreBoard.css";
 import ScoreBoard from "./ScoreBoard";
 import Rack from "./Rack";
 import { calculateScores } from "../Logic/Scoring"; 
+import { isValidWord } from "../Logic/GamesRules"; 
 
 // Example bonus squares mapping
 const bonusSquares = {
@@ -34,9 +35,6 @@ const Board = () => {
   // placedTiles holds the letters placed during the current move.
   const [boardTiles, setBoardTiles] = useState({});
   const [placedTiles, setPlacedTiles] = useState([]);
-
-  // Simple dictionary for word validation
-  const dictionary = ["HELLO", "WORLD", "TEST", "EXAMPLE"];
 
   // Timer effect
   useEffect(() => {
@@ -74,11 +72,8 @@ const Board = () => {
 
   // Click handler to remove a tile placed in the current move.
   const handleTileClick = (cellId) => {
-    // Only allow removal if this tile is part of the current move.
     const tileInCurrentMove = placedTiles.find(tile => tile.position === cellId);
     if (!tileInCurrentMove) return;
-
-    // Remove from placedTiles and boardTiles.
     setPlacedTiles(prev => prev.filter(tile => tile.position !== cellId));
     setBoardTiles(prev => {
       const newBoard = { ...prev };
@@ -93,33 +88,110 @@ const Board = () => {
     e.preventDefault();
     const tileData = e.dataTransfer.getData("tile"); 
     if (!tileData) return;
-    // Prevent overriding a tile in a cell (cannot drop on a cell that already has a permanent tile)
     if (boardTiles[cellId]) {
       alert("This cell already has a tile!");
       return;
     }
-    // Update boardTiles permanently and track it in placedTiles
     setBoardTiles(prev => ({ ...prev, [cellId]: tileData }));
     setPlacedTiles(prev => ([ ...prev, { letter: tileData, position: cellId } ]));
   };
 
-  // Validate word (using only the newly placed tiles for simplicity)
-  // For a more complete game, you might need to combine with existing letters.
-  const validateWord = () => {
+  // Helper to build the full horizontal word from the board at a given row.
+  const getFullWordHorizontal = (row) => {
+    const cols = placedTiles.map(tile => parseInt(tile.position.slice(2, 4)));
+    let minCol = Math.min(...cols);
+    let maxCol = Math.max(...cols);
+    let start = minCol;
+    while (start > 1) {
+      const cellId = row.toString().padStart(2, "0") + (start - 1).toString().padStart(2, "0");
+      if (boardTiles[cellId]) {
+        start--;
+      } else {
+        break;
+      }
+    }
+    let end = maxCol;
+    while (end < boardSize) {
+      const cellId = row.toString().padStart(2, "0") + (end + 1).toString().padStart(2, "0");
+      if (boardTiles[cellId]) {
+        end++;
+      } else {
+        break;
+      }
+    }
+    let fullWord = "";
+    for (let c = start; c <= end; c++) {
+      const cellId = row.toString().padStart(2, "0") + c.toString().padStart(2, "0");
+      fullWord += boardTiles[cellId] || "";
+    }
+    return fullWord;
+  };
+
+  // Helper to build the full vertical word from the board at a given column.
+  const getFullWordVertical = (col) => {
+    const rowsArr = placedTiles.map(tile => parseInt(tile.position.slice(0, 2)));
+    let minRow = Math.min(...rowsArr);
+    let maxRow = Math.max(...rowsArr);
+    let start = minRow;
+    while (start > 1) {
+      const cellId = start.toString().padStart(2, "0") + col.toString().padStart(2, "0");
+      if (boardTiles[cellId]) {
+        start--;
+      } else {
+        break;
+      }
+    }
+    let end = maxRow;
+    while (end < boardSize) {
+      const cellId = end.toString().padStart(2, "0") + col.toString().padStart(2, "0");
+      if (boardTiles[cellId]) {
+        end++;
+      } else {
+        break;
+      }
+    }
+    let fullWord = "";
+    for (let r = start; r <= end; r++) {
+      const cellId = r.toString().padStart(2, "0") + col.toString().padStart(2, "0");
+      fullWord += boardTiles[cellId] || "";
+    }
+    return fullWord;
+  };
+
+  // Validate word by forming the full word (including adjacent letters on the board)
+  // and then checking it with the API.
+  const validateWord = async () => {
     if (placedTiles.length === 0) return false;
-    const sortedTiles = [...placedTiles].sort((a, b) => a.position.localeCompare(b.position));
-    const word = sortedTiles.map(tile => tile.letter).join("").toUpperCase();
-    console.log("Validating word:", word);
-    return dictionary.includes(word);
+    let fullWord = "";
+    const rowsArr = placedTiles.map(tile => tile.position.slice(0, 2));
+    const isHorizontal = rowsArr.every(r => r === rowsArr[0]);
+    if (isHorizontal) {
+      const row = parseInt(rowsArr[0]);
+      fullWord = getFullWordHorizontal(row);
+    } else {
+      const colsArr = placedTiles.map(tile => tile.position.slice(2, 4));
+      const isVertical = colsArr.every(c => c === colsArr[0]);
+      if (isVertical) {
+        const col = parseInt(colsArr[0]);
+        fullWord = getFullWordVertical(col);
+      } else {
+        // For non-linear placements, we can't form a proper word.
+        return false;
+      }
+    }
+    fullWord = fullWord.trim();
+    console.log("Validating full word:", fullWord);
+    if (fullWord.length < 2) return false;
+    return await isValidWord(fullWord.toLowerCase());
   };
 
   // Submit the word. Returns true if valid, false otherwise.
-  const submitWord = () => {
+  const submitWord = async () => {
     if (placedTiles.length === 0) {
       alert("No tiles placed!");
       return false;
     }
-    if (validateWord()) {
+    if (await validateWord()) {
       console.log("Word validated!");
       handleWordPlacement(placedTiles);
       return true;
@@ -129,8 +201,7 @@ const Board = () => {
     }
   };
 
-  // Process a valid word: update scores and keep boardTiles intact,
-  // but clear placedTiles for the next move.
+  // Process a valid word: update scores and clear placed tiles.
   const handleWordPlacement = (tiles) => {
     const bonusTiles = tiles.map(tile => ({
       letter: tile.letter,
@@ -143,13 +214,12 @@ const Board = () => {
       setPlayer2Score(prev => prev + points);
     }
     console.log(`Player ${currentPlayer} placed a word! Earned ${points} points.`);
-    // Only clear placedTiles so the word remains on the board.
     setTimeout(() => {
       switchTurn();
     }, 1000);
   };
 
-  // Switch turn: clear only placedTiles (keeping permanent boardTiles).
+  // Switch turn: clear only placed tiles.
   const switchTurn = () => {
     setCurrentPlayer(prev => (prev === 1 ? 2 : 1));
     setPlacedTiles([]);
@@ -174,7 +244,6 @@ const Board = () => {
           className={bonus}
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => handleDrop(e, cellId)}
-          // Allow clicking to remove a tile if it was placed in the current move.
           onClick={() => handleTileClick(cellId)}
         >
           {cellContent}
