@@ -40,7 +40,7 @@
     flex-direction: column; /* Stack Turn Indicator Above Scoreboard */
     align-items: center;
     justify-content: center;
-    margin-bottom: 15px; /* Add spacing */
+    margin-bottom: 15px; 
   }
   
   .turn-indicator {
@@ -49,5 +49,10 @@
     margin-bottom: 10px;
     transition: transform 0.5s ease-in-out;
   }
+  .leading {
+    color: #28a745; /* Green for the leading player */
+    font-weight: bold;
+}
+
   
     

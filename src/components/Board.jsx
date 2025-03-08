@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../css/Board.css";
+import "../css/ScoreBoard.css";
 import ScoreBoard from "./ScoreBoard";
 import Rack from "./Rack";
 import { calculateScores } from "../Logic/Scoring"; 
@@ -52,6 +53,25 @@ const Board = () => {
     return () => clearInterval(timer);
   }, [timeLeft]);
 
+  //  Track Score When Tiles Are Placed 
+  useEffect(() => {
+    if (placedTiles.length > 0) {
+      const bonusTiles = placedTiles.map(tile => ({
+        letter: tile.letter,
+        bonus: bonusSquares[tile.position] || ""
+      }));
+      const points = calculateScores(bonusTiles);
+  
+      if (currentPlayer === 1) {
+        setPlayer1Score(prevScore => prevScore + points);  // adds to the existing score
+      } else {
+        setPlayer2Score(prevScore => prevScore + points);  // adds to the existing score
+      }
+    }
+  }, [placedTiles]);
+  
+
+
   // Click handler to remove a tile placed in the current move.
   const handleTileClick = (cellId) => {
     // Only allow removal if this tile is part of the current move.
@@ -81,7 +101,6 @@ const Board = () => {
     // Update boardTiles permanently and track it in placedTiles
     setBoardTiles(prev => ({ ...prev, [cellId]: tileData }));
     setPlacedTiles(prev => ([ ...prev, { letter: tileData, position: cellId } ]));
-    console.log(`Dropped tile "${tileData}" on cell ${cellId}`);
   };
 
   // Validate word (using only the newly placed tiles for simplicity)
