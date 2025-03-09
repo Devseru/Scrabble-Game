@@ -51,24 +51,8 @@ const Board = () => {
     return () => clearInterval(timer);
   }, [timeLeft]);
 
-  //  Track Score When Tiles Are Placed 
-  useEffect(() => {
-    if (placedTiles.length > 0) {
-      const bonusTiles = placedTiles.map(tile => ({
-        letter: tile.letter,
-        bonus: bonusSquares[tile.position] || ""
-      }));
-      const points = calculateScores(bonusTiles);
-  
-      if (currentPlayer === 1) {
-        setPlayer1Score(prevScore => prevScore + points);  // adds to the existing score
-      } else {
-        setPlayer2Score(prevScore => prevScore + points);  // adds to the existing score
-      }
-    }
-  }, [placedTiles]);
-  
-
+  // Removed auto-scoring useEffect that updated score on placedTiles change.
+  // Scoring will now only happen when submitWord calls handleWordPlacement.
 
   // Click handler to remove a tile placed in the current move.
   const handleTileClick = (cellId) => {
