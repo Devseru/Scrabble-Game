@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import Tile from './Tile';
 import './Rack.css';
 import { getInitialTilesBag, drawTiles } from '../Logic/TilesBag';
+import { RackContext } from './Board';
 
-const Rack = ({ submitWord }) => {
+const Rack = ({ submitWord, player }) => {
+  //consume the context
+  const {setPlayer1Rack, setCompRack} = useContext(RackContext);
+  
   const [bag, setBag] = useState([]);
   const [tiles, setTiles] = useState([]);
   // Track IDs of tiles that have been played (i.e. dragged from the rack)
@@ -15,6 +19,8 @@ const Rack = ({ submitWord }) => {
     const initialTiles = drawTiles(7, initialBag); // Draw 7 tiles
     setBag(initialBag); // Save remaining bag for future use
     setTiles(initialTiles);
+    if (player === "player 1") setPlayer1Rack(initialTiles);
+    else if (player === "computer") setCompRack(initialTiles);
   }, []);
 
   // Quit: Reload the page to simulate quitting the game.
@@ -39,6 +45,8 @@ const Rack = ({ submitWord }) => {
     setTiles(newTiles);
     // Clear the used tile tracking.
     setUsedTileIds([]);
+    if (player === "player 1") setPlayer1Rack(newTiles);
+    else if (player === "computer") setCompRack(newTiles);
   };
 
   // Submit: Call the submitWord function passed from Board.
@@ -58,6 +66,9 @@ const Rack = ({ submitWord }) => {
         setTiles([...remainingTiles, ...newTiles]);
         // Clear the usedTileIds tracking.
         setUsedTileIds([]);
+        if (player === "player 1") {setPlayer1Rack([...remainingTiles,...newTiles]);
+
+        }else if (player === "computer") setCompRack([...remainingTiles,...newTiles]);
       }
     }
   };
@@ -72,6 +83,7 @@ const Rack = ({ submitWord }) => {
 
   return (
     <div className="rack-container">
+      <h3>{player}'s rack</h3>
       <div className="tile-rack">
         {tiles.map(tile => (
           <Tile

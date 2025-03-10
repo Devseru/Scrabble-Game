@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, createContext } from "react";
 import "../css/Board.css";
 import "../css/ScoreBoard.css";
 import ScoreBoard from "./ScoreBoard";
 import Rack from "./Rack";
 import { calculateScores } from "../Logic/Scoring"; 
 import { isValidWord } from "../Logic/GamesRules"; 
+import { validateWordFn } from "../Logic/WordValidation";
 
 // Example bonus squares mapping
 const bonusSquares = {
@@ -22,8 +23,16 @@ const bonusSquares = {
   "1414": "DW", "1501": "TW", "1504": "DL", "1512": "DL", "1515": "TW",
 };
 
+//context to provide the state of the two racks across various components
+export const RackContext =  createContext("none");
+
 const Board = () => {
   const boardSize = 15;
+
+  //state containing the letters in the two racks
+  //player1's rack and the computer's rack
+  const[player1Rack, setPlayer1Rack] = useState([]);
+  const [compRack, setCompRack] = useState([]); 
 
   // State for scores, turn, timer
   const [player1Score, setPlayer1Score] = useState(0);
@@ -177,13 +186,13 @@ const Board = () => {
     }
     if (await validateWord()) {
       console.log("Word validated!");
+      console.log(validateResult);
       handleWordPlacement(placedTiles);
       return true;
     } else {
       alert("Invalid word!");
       return false;
-    }
-  };
+    }};
 
   // Process a valid word: update scores and clear placed tiles.
   const handleWordPlacement = (tiles) => {
@@ -212,6 +221,10 @@ const Board = () => {
     }, 1500);
   };
 
+  //give names to the the two players
+  let player1 = "player 1";
+  let player2 = "computer";
+
   // Build the 15x15 grid
   const rows = [];
   for (let row = 1; row <= boardSize; row++) {
@@ -237,32 +250,37 @@ const Board = () => {
     rows.push(<tr key={row}>{cells}</tr>);
   }
 
+  //console.log(player1Rack);
+  //console.log(compRack);
   return (
-    <div className="Board">
-      <div className="main-section">
-        <div className="scoreboard-area">
-          <h3 className={`turn-indicator ${timeLeft === 60 ? "turn-change" : ""}`}>
-            🎲 It’s{" "}
-            <span className={currentPlayer === 1 ? "player1" : "player2"}>
-              Player {currentPlayer}
-            </span>
-            ’s Turn! 🎲
-          </h3>
-          <ScoreBoard
-            player1Score={player1Score}
-            player2Score={player2Score}
-            currentPlayer={currentPlayer}
-            timeLeft={timeLeft}
-          />
+    <RackContext.Provider value = {{player1Rack, setPlayer1Rack, compRack, setCompRack}}>
+      <div className="Board">
+        <div className="main-section">
+          <div className="scoreboard-area">
+            <h3 className={`turn-indicator ${timeLeft === 60 ? "turn-change" : ""}`}>
+              🎲 It’s{" "}
+              <span className={currentPlayer === 1 ? "player1" : "player2"}>
+                Player {currentPlayer}
+              </span>
+              ’s Turn! 🎲
+            </h3>
+            <ScoreBoard
+              player1Score={player1Score}
+              player2Score={player2Score}
+              currentPlayer={currentPlayer}
+              timeLeft={timeLeft}
+            />
+          </div>
+          <div className="board-container">
+            <table>
+              <tbody>{rows}</tbody>
+            </table>
+          </div>
         </div>
-        <div className="board-container">
-          <table>
-            <tbody>{rows}</tbody>
-          </table>
-        </div>
+        {currentPlayer === 1 ? <Rack submitWord={submitWord} player = {player1} /> :
+        <Rack submitWord={submitWord} player = {player2}/>}
       </div>
-      <Rack submitWord={submitWord} />
-    </div>
+    </RackContext.Provider>
   );
 };
 
