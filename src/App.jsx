@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from "react";
 import "./App.css";
 import Board from "./components/Board";
-import { validateWord } from "./Logic/WordValidation";
+import { validateWordFn } from "./Logic/WordValidation";
 
 function App() {
   // testing WordValidation
@@ -9,7 +9,7 @@ function App() {
   const [word, setWord] = useState("branch");
   useEffect(() => {
     setWord("text");
-    setMessage(validateWord(word));
+    setMessage(validateWordFn(word));
   }, []);
   return (
     <div className="App">

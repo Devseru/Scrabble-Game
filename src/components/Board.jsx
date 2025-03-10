@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, createContext } from "react";
 import "../css/Board.css";
 import ScoreBoard from "./ScoreBoard";
 import Rack from "./Rack";
 import { calculateScores } from "../Logic/Scoring"; 
+import { validateWordFn } from "../Logic/WordValidation";
 
 // Example bonus squares mapping
 const bonusSquares = {
@@ -20,8 +21,16 @@ const bonusSquares = {
   "1414": "DW", "1501": "TW", "1504": "DL", "1512": "DL", "1515": "TW",
 };
 
+//context to provide the state of the two racks across various components
+export const RackContext =  createContext("none");
+
 const Board = () => {
   const boardSize = 15;
+
+  //state containing the letters in the two racks
+  //player1's rack and the computer's rack
+  const[player1Rack, setPlayer1Rack] = useState([]);
+  const [compRack, setCompRack] = useState([]); 
 
   // State for scores, turn, timer
   const [player1Score, setPlayer1Score] = useState(0);
@@ -36,6 +45,7 @@ const Board = () => {
 
   // Simple dictionary for word validation
   const dictionary = ["HELLO", "WORLD", "TEST", "EXAMPLE"];
+
 
   // Timer effect
   useEffect(() => {
@@ -86,29 +96,36 @@ const Board = () => {
 
   // Validate word (using only the newly placed tiles for simplicity)
   // For a more complete game, you might need to combine with existing letters.
-  const validateWord = () => {
+  async function validateWord(){
     if (placedTiles.length === 0) return false;
     const sortedTiles = [...placedTiles].sort((a, b) => a.position.localeCompare(b.position));
-    const word = sortedTiles.map(tile => tile.letter).join("").toUpperCase();
-    console.log("Validating word:", word);
-    return dictionary.includes(word);
+    let placedWord = placedTiles.map(tile => tile.letter).join("").toLowerCase();
+    //setWord(placedWord);
+    //setValidationesult("");
+    console.log("Validating word:", placedWord);
+    console.log(placedWord);
+    //fetchValidation();
+    const result = await validateWordFn(placedWord);
+    return result;
   };
 
   // Submit the word. Returns true if valid, false otherwise.
-  const submitWord = () => {
+  const submitWord = async() => {
     if (placedTiles.length === 0) {
       alert("No tiles placed!");
       return false;
     }
-    if (validateWord()) {
+    const validateResult = await validateWord();
+    if (validateResult === `is valid`) 
+     {
       console.log("Word validated!");
+      console.log(validateResult);
       handleWordPlacement(placedTiles);
       return true;
     } else {
       alert("Invalid word!");
       return false;
-    }
-  };
+    }};
 
   // Process a valid word: update scores and keep boardTiles intact,
   // but clear placedTiles for the next move.
@@ -139,6 +156,10 @@ const Board = () => {
     }, 1500);
   };
 
+  //give names to the the two players
+  let player1 = "player 1";
+  let player2 = "computer";
+
   // Build the 15x15 grid
   const rows = [];
   for (let row = 1; row <= boardSize; row++) {
@@ -165,32 +186,37 @@ const Board = () => {
     rows.push(<tr key={row}>{cells}</tr>);
   }
 
+  //console.log(player1Rack);
+  //console.log(compRack);
   return (
-    <div className="Board">
-      <div className="main-section">
-        <div className="scoreboard-area">
-          <h3 className={`turn-indicator ${timeLeft === 60 ? "turn-change" : ""}`}>
-            🎲 It’s{" "}
-            <span className={currentPlayer === 1 ? "player1" : "player2"}>
-              Player {currentPlayer}
-            </span>
-            ’s Turn! 🎲
-          </h3>
-          <ScoreBoard
-            player1Score={player1Score}
-            player2Score={player2Score}
-            currentPlayer={currentPlayer}
-            timeLeft={timeLeft}
-          />
+    <RackContext.Provider value = {{player1Rack, setPlayer1Rack, compRack, setCompRack}}>
+      <div className="Board">
+        <div className="main-section">
+          <div className="scoreboard-area">
+            <h3 className={`turn-indicator ${timeLeft === 60 ? "turn-change" : ""}`}>
+              🎲 It’s{" "}
+              <span className={currentPlayer === 1 ? "player1" : "player2"}>
+                Player {currentPlayer}
+              </span>
+              ’s Turn! 🎲
+            </h3>
+            <ScoreBoard
+              player1Score={player1Score}
+              player2Score={player2Score}
+              currentPlayer={currentPlayer}
+              timeLeft={timeLeft}
+            />
+          </div>
+          <div className="board-container">
+            <table>
+              <tbody>{rows}</tbody>
+            </table>
+          </div>
         </div>
-        <div className="board-container">
-          <table>
-            <tbody>{rows}</tbody>
-          </table>
-        </div>
+        {currentPlayer === 1 ? <Rack submitWord={submitWord} player = {player1} /> :
+        <Rack submitWord={submitWord} player = {player2}/>}
       </div>
-      <Rack submitWord={submitWord} />
-    </div>
+    </RackContext.Provider>
   );
 };
 
