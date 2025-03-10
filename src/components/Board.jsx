@@ -186,7 +186,7 @@ const Board = () => {
     }
     if (await validateWord()) {
       console.log("Word validated!");
-      console.log(validateResult);
+      //console.log(validateResult);
       handleWordPlacement(placedTiles);
       return true;
     } else {
