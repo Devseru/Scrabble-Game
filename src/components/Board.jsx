@@ -98,7 +98,7 @@ const Board = () => {
   // For a more complete game, you might need to combine with existing letters.
   async function validateWord(){
     if (placedTiles.length === 0) return false;
-    const sortedTiles = [...placedTiles].sort((a, b) => a.position.localeCompare(b.position));
+    //const sortedTiles = [...placedTiles].sort((a, b) => a.position.localeCompare(b.position));
     let placedWord = placedTiles.map(tile => tile.letter).join("").toLowerCase();
     //setWord(placedWord);
     //setValidationesult("");
