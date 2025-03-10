@@ -4,6 +4,7 @@ let message = "";
 // Function to fetch and validate the passed word
 export async function validateWordFn(word) {
     try {
+        //fetch
         const response = await fetch(`https://api.datamuse.com/words?sp=${word}&max=1`);
         const data = await response.json();
 

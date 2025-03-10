@@ -97,6 +97,6 @@ function readBoardStatus(boardTiles){
 
 //function to search words that match the calculated word postions
 //takes the array produced by readBoardStatus as a parameter
-function generateWords(){
-    
+async function generateWords(){
+
 }

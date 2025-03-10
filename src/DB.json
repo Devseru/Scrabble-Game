@@ -33,7 +33,6 @@
 "BoardStatus": [
     {"id": 1,
         "status": {
-            //boardTiles
             "cellId": "", 
             "tileDate": ""
                     }        
